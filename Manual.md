@@ -23,6 +23,9 @@ Una vez realizado este paso se abrira una pantalla en la cual se debera seleccio
 Se selecciona Ubuntu server y luego hecho.
 ![image](anexos/creacionMaquina/cm-5.png)
 
+Si el sistema necesita un proxy para conectar a internet debera de escribirse el proxy, sin embargo, en nuestro caso no es neceario, por lo que solo se omite, darle a `Hecho`.
+![image](anexos/creacionMaquina/cm-5-1.png)
+
 Una vez realizadaos los pasos anteriores se muestran los detalles sobre la instalacion.
 ![image](anexos/creacionMaquina/cm-6.png)
 
@@ -37,3 +40,15 @@ Posterior a ello, realizados todos estos pasos, se podra observar esta pantalla,
 Una vez hecho esto, la maquina quedara configurada para su uso.
 
 ![image](anexos/creacionMaquina/cm-9.png)
+
+Este proceso se repite para cada maquina, y con esto se tendran creadas tres maquinas, las cuales son:
+
+- 202203009_1
+- 202203009_2
+- 202203009_3
+
+con las mismas credenciales:
+usuario: `matius`
+contrasenia: `1234`
+
+![image](anexos/creacionMaquina/cm-10.png)
