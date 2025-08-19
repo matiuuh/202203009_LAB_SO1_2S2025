@@ -66,6 +66,12 @@ En nuestro caso se decidio dividirlo de la siguiente manera:
 
 Cabe mencionar que de las maquinas que tendran instalado docker son la maquina `host` y la `202203009_3` es decir, la maquina 3, de la misma manera la maquina 3 usara zot, en cuanto a las otras dos maquinas tendran docker y containerd.
 
+En resumen, la maquina 3, contenera (valga la redundancia) los contenedores y se las suministrara a las otras dos maquinas, dichas vms ejecutaran los contendores y se conectaran entre si.
+
+### Maquina 1 - 202203009_1
+Para esta maquina,
+
+
 ### Maquina 3 - 202203009_3
 Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
 
@@ -115,3 +121,44 @@ sudo docker run hello-world
 ```
 
 Si observa un mensaje de bienvenida, significa que la instalacion de Docker ha sido exitosa, de lo contrario, se recomienda seguir los pasos nuevamente.
+
+Por ultimo, tenemos que hacer la configuracion de docker, que realmente este paso puede omitirse, pero por comodidad lo hare.
+
+### Configuracion post-instalacion
+
+Ahora ingresaremos el siguiente comando:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Este comando le permite al usuario ejecutar docker sin necesidad de sudo, esto debido a que el socket /var/run/docker.sock pertenece al grupo docker.
+
+Seguidamente, introducimos los siguientes comandos:
+
+```bash
+newgrp docker
+```
+
+Esto aplica inmediatamente los cambios de grupo en la sesion actual, sin esto se tendria que cerrar sesion y volver a entrar para que el usuario herede el grupo de docker, en palabras mas simples `recarga los gruos de usuario`.
+
+```bash
+sudo systemctl enable docker
+```
+
+Con este comando no se tiene que levantar manualmente con `systemctl start docker` tras cada reincio.
+
+y para verificar el estado del servicio de docker solamente usamos:
+
+```bash
+sudo systemctl status docker
+```
+
+Una vez tengamos instalado docker, ahora podremos iniciar un registro `zot` en segundo plano, exponiendo el puerto 5000, para ello nos apoyaremos del siguiente comando:
+
+```bash
+docker run -d -p 5000:5000 --name zot ghcr.io/project-zot/zot-linux-amd64:latest
+```
+
+Con eso se descargara la imagen de `zot` y la ejecutara como un contenedor llamado `zot`. 
+
