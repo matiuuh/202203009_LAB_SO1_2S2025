@@ -52,3 +52,66 @@ usuario: `matius`
 contrasenia: `1234`
 
 ![image](anexos/creacionMaquina/cm-10.png)
+
+La creacion de dichas maquinas virtuales nos servira para hacer las respectivas conexiones que solicita el proyecto, el esquema a seguir es el siguiente:
+
+![image](anexos/Maquinas/esquema.png)
+
+
+En nuestro caso se decidio dividirlo de la siguiente manera:
+
+- Maquina con 1 contenedor `202203009_1`
+- Maquina 2 contenedores `202203009_2`
+- Maquina 3 con zot `202203009_3`
+
+Cabe mencionar que de las maquinas que tendran instalado docker son la maquina `host` y la `202203009_3` es decir, la maquina 3, de la misma manera la maquina 3 usara zot, en cuanto a las otras dos maquinas tendran docker y containerd.
+
+### Maquina 3 - 202203009_3
+Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
+
+esto lo haremos con los siguientes comandos:
+
+**Nota**:
+Recomiendo que para los comandos se utilice un medio que les facilite el ingreso de estos, puesto que hacerlo de otra manera puede que les complique un poco el proceso.
+
+En este caso lo realice de la siguiente manera:
+
+```bash
+ssh usuario@IP_de_la_VM
+```
+Para conocer la IP de la maquina virtual basta con ingresar el siguiente comando en la terminal de la pc host:
+
+```bash
+virsh domifaddr nombre_de_la_VM
+```
+En este punto se abrira una terminal de la maquina virtual, donde podran ingresarse comando y copiar y pegar como se hace en la consola de la host.
+
+``` bash
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+Adicional a ello, se recomiendo instalar instala Docker Engine y complementos:
+
+```bash
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Posterior a la instalacion se debe verificar que la instalacion este correctamente hecha, se hace de la siguiente manera:
+
+```bash
+sudo docker run hello-world
+```
+
+Si observa un mensaje de bienvenida, significa que la instalacion de Docker ha sido exitosa, de lo contrario, se recomienda seguir los pasos nuevamente.
