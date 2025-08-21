@@ -14,7 +14,7 @@ COPY . .
 RUN go mod tidy
 
 # Compilar
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/api .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/ap2 .
 #Ahora se guarda nuestro archivo en la carpeta app con el nombre api
 
 #este runtime se encarga de correr la aplicación,
@@ -24,10 +24,10 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-COPY --from=builder /app/api .
+COPY --from=builder /app/ap2 .
 
 # Puerto expuesto (debe ser el mismo que el del servidor)
-EXPOSE 8081
+EXPOSE 8082
 
 # Comando de ejecución
-CMD ["./api"]
+CMD ["./ap2"]

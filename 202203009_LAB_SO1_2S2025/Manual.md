@@ -222,6 +222,45 @@ Seguidamente podemos ejecutar:
 curl http://localhost:8080
 ```
 
+Sin embargo, esta imagen es muy pesada, pero hay una forma de volverla mas liviana, y es de la siguiente manera:
+
+```docker
+FROM golang:1.23-alpine AS builder
+
+# Configuración del entorno
+WORKDIR /app
+
+COPY go.mod .
+#COPY go.sum .
+
+# Instalar dependencias
+RUN go mod download
+
+COPY . .
+
+RUN go mod tidy
+
+# Compilar
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/api .
+#Ahora se guarda nuestro archivo en la carpeta app con el nombre api
+
+#este runtime se encarga de correr la aplicación,
+#mientras que el otro se encarga de construir 
+#runtime stage
+FROM alpine:3.22
+
+WORKDIR /app
+
+COPY --from=builder /app/api .
+
+# Puerto expuesto (debe ser el mismo que el del servidor)
+EXPOSE 8081
+
+# Comando de ejecución
+CMD ["./api"]
+```
+
+
 ### Maquina 3 - 202203009_3
 Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
 
@@ -312,3 +351,86 @@ docker run -d -p 5000:5000 --name zot ghcr.io/project-zot/zot-linux-amd64:latest
 
 Con eso se descargara la imagen de `zot` y la ejecutara como un contenedor llamado `zot`. 
 
+
+### Subir imagenes con desde el host a maquina con zot
+
+En la maquina virtual con zot levantaremos zot en el puerto 5000.
+
+EL procedimiento es el siguiente:
+
+```docker
+
+sudo docker ps
+
+curl http://localhost:5000/v2/
+
+curl http://localhost:5000/v2/_catalog
+```
+En caso de que no funcione, probar con esto:
+
+```bash
+sudo docker rm zot
+
+
+sudo docker run -d --name zot \
+  --restart unless-stopped \
+  -p 5000:5000 \
+  -v /opt/zot/data:/var/lib/registry \
+  ghcr.io/project-zot/zot-linux-amd64:latest
+
+#verificar y probar nuevamente
+sudo docker ps
+curl http://localhost:5000/v2/
+curl http://localhost:5000/v2/_catalog
+
+```
+Una vez realizado el procedimiento anterior introduciermos esto:
+
+```bash
+docker tag api1:liviana 192.168.122.107:5000/api1:liviana
+```
+
+Cabe recalcar que dicho comando se ejecuta desde el host. Ahora solo hacemos push:
+
+```bash
+docker push 192.168.122.107:5000/api1:liviana
+```
+
+Ahora para comprobar que en la maquina virtual ya tenemos la imagen podemos hacer lo siguiente:
+
+```bash
+curl http://localhost:5000/v2/_catalog
+```
+
+Y ahi se podra ver si realmente se descargo la imagen.
+
+
+### Llamadas entre APIs
+
+En cada maquina virtual con containerd se debe de realizar este proceso. Para hacer las llamadas dentre las APIs nos ayudaremos de los siguientes comandos:
+
+```bash
+#sudo ctr images pull --plain-http IP_VM:5000/NOMBRE_IMAGEN:TAG
+
+sudo ctr images pull --plain-http 192.168.122.107:5000/api1:liviana
+```
+
+Ahora, para ejecutar el contenedor en segundo plano usamos lo siguiente:
+
+```bash
+#sudo ctr run -d --net-host <IP_VM_DOCKER>:5000/fiber-api-go:v1 NOMBRE_CONTENEDOR_INICIALIZAR
+
+sudo ctr run -d --net-host 192.168.122.107:5000/api1:liviana MI_API_1
+
+```
+
+De esta manera la maquina virtual habra consultado existosamente a la maquina 3.
+
+![image](anexos/imagenes/2.png)
+
+Ahora, para hacer pruebas entre las otras APIs se hace de la siguiente manera:
+
+```bash
+curl http://192.168.122.217:8081/api1/202203009/llamar-api2
+curl http://192.168.122.217:8081/api1/202203009/llamar-api3
+```

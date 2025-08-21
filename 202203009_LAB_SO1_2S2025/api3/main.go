@@ -64,21 +64,21 @@ func callOtherAPI(apiName, vmName, studentName, carnet, targetName, targetURL st
 
 func main() {
 	// Credenciales de esta API
-	apiName := "API1"
-	vmName := "202203009_1"
+	apiName := "API3"
+	vmName := "202203009_2"
 	studentName := "Mateo Noriega"
 	carnet := "202203009"
-	port := "8081"
+	port := "8083"
 
 	// URLs de las otras APIs (ajusta según tus VMs)
-	api2URL := "http://192.168.122.30:8082"
-	api3URL := "http://192.168.122.30:8083"
+	api1URL := "http://192.168.122.217:8081"
+	api2URL := "http://192.168.122.30:8083"
 
 	mux := http.NewServeMux()
 
 	// Endpoints de esta API
-	mux.HandleFunc("/api1/"+carnet+"/llamar-api2", callOtherAPI(apiName, vmName, studentName, carnet, "API2", api2URL))
-	mux.HandleFunc("/api1/"+carnet+"/llamar-api3", callOtherAPI(apiName, vmName, studentName, carnet, "API3", api3URL))
+	mux.HandleFunc("/api1/"+carnet+"/llamar-api1", callOtherAPI(apiName, vmName, studentName, carnet, "API1", api1URL))
+	mux.HandleFunc("/api2/"+carnet+"/llamar-api2", callOtherAPI(apiName, vmName, studentName, carnet, "API2", api2URL))
 
 	// Endpoint de salud (útil para probar si está vivo)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +89,7 @@ func main() {
 	// Endpoint raíz
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("API1 viva. Usa /healthz o /api1/202203009/llamar-api{2|3}\n"))
+		w.Write([]byte("API3 viva. Usa /healthz o /api3/202203009/llamar-api{1|2}\n"))
 	})
 
 	// Iniciar servidor con logger
