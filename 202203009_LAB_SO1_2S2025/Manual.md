@@ -1,3 +1,10 @@
+# Manual y guia de instalacion
+
+#### Nombre: Mateo Estuardo Diego Noriega
+#### Carnet: 202203009
+
+
+
 ## Creacion maquinas virtuales
 
 Para la creacion de las maquinas virtuales simplemente basta con abrir el gestor de maquinas virtuales que se instalo.
@@ -260,6 +267,170 @@ EXPOSE 8081
 CMD ["./api"]
 ```
 
+## Maquina 2 - 202203009_2
+Una vez realizados los pasos anteriores, desde la maquina host, se debera crear una carpeta para la api de la maquina, se recomienda que se le coloque un nombre que lo identifique, en este caso sera `api1`.
+
+una vez dentro de la carpeta se ejecutara el siguiente comando para inciar el proyecto de go:
+
+```go
+go mod init Nombre_Proyecto
+```
+
+En nuestro el nombre sera el mismo que el de la carpeta, es decir `api1`. Dicho modulo es necesario para que nuestros programas en go funcionen correctamente.
+
+Ahora, nos apoyaremos del siguiente comando para crear el archivo `main.go`.
+
+```bash
+touch main.go
+```
+
+Una vez hecho esto se nos creara el main de nuestro proyecto. Ahora ya tenemos todo lo necesario para empezar. Hay varias maneras de modificar el main, pero al estar trabajando el main desde la maquina host, en este caso se trabajo desde vsc.
+
+Al culminar con la realizacion de la api el siguiente paso es crear un `dockerfile`, la razon es que para que nosotros podamos construir una imagen de docker que es lo que usaremos para crear contendores, necesitamos crear un archivo dockerfile, y eso siempre en el mismo lugar donde esta nuestro codigo porque de esta manera se puede acceder al codigo mas facilmente.
+
+Por lo tanto el siguiente paso es crear un dockerfile, y dentro de este pondremos lo siguiente:
+
+```docker
+FROM golang:1.23-alpine
+
+# Configuración del entorno
+WORKDIR /app
+COPY . .
+
+# Instalar dependencias 
+RUN go mod download
+
+# Compilar
+RUN CGO_ENABLED=0 GOOS=linux go build -o server .
+
+# Puerto expuesto (debe ser el mismo que el del servidor)
+EXPOSE 80
+
+# Comando de ejecución
+CMD ["/app/server"]
+```
+Explicando el contenido del dockerfile, primero tenemos lo siguiente:
+
+```docker
+FROM golang:1.23-alpine
+```
+Es para ir a buscar la imagen que utilizaremos, la version es la version de go con la que estamos trabajando. El -alpine, hace que se descargue una imagen liviana y que trae todo lo necesario.
+
+```docker
+WORKDIR /app
+COPY . .
+```
+Con esto creamos una carpeta dentro de nuestro contenedor llamada `app`, y dentro de `/app` nos ayudaremos con el `COPY` para copiar todo lo que esta en la carpeta donde nos encontramos hacia la carpeta de nuestro contenedor.
+
+Resumiendo, creamos un directorio llamado app dentro del contenedor, el contenedor es practicamente un mini SO en el que vamos a crear lo necesario para crear nuestras aplicaciones.
+
+Luego con el COPY copiaremos todos los archivos de nuestro directorio local hacia dentro del contenedor.
+
+```docker
+# Instalar dependencias 
+RUN go mod download
+```
+
+Esta instruccion se utiliza por si acaso hay alguba dependencia que deba descargar go.
+
+```docker
+# Compilar
+RUN CGO_ENABLED=0 GOOS=linux go build -o server .
+```
+Este comando va a deshabilitar cualquier tipo de compilacion externa de go porque nosotros vamos a compilar codigo dentro del contendor para que se ejecute dentro de el, entonces no necesita acceder a ninguna dependencia externa porque se supone que ya esta todo dentro del codigo que nosotros podamos necesitar y se descargo anteriormente con el `RUN`. Asimismo le decimos que estamos trabajando sobre un sistema linux.
+
+El `go build` crea todo dentro de un binario llamado server y lo va a crear justo donde estamos, es decir, en `/app`.
+
+Por ultimo debemos de exponer el puerto:
+
+```docker
+# Puerto expuesto (debe ser el mismo que el del servidor)
+EXPOSE 80
+```
+
+Si no exponemos el puerto, la aplicacion no se podra conectar con nuestra computadora, el contenedor va a correr pero cuando quereamos que se comunique con otras maquinas no va a poder porque no esta expuesto.
+
+
+```docker
+# Comando de ejecución
+CMD ["/app/server"]
+```
+
+Es el comando que va a estar ejecutando el codigo siempre, su diferencia con RUN es que `RUN` se ejecuta dentro del contenedor a la hora de crearse pero una vez creado ya no ejecuta nada del resto, por otro lado `CMD` se ejecuta al final de todo lo anterior. Por ultimo, ejecuta server, es decir, el binario creado anteriormente.
+
+### Creacion imagen de docker
+Para crear la imagen de docker usaremos el siguiente comando:
+
+```docker
+#docker build -t nombre_imagen:tag .
+
+docker build -t api1:pesada .
+```
+Ahora si se ejecuta el siguiente comando, podra obserbarse las imagenes que tenemos actualmente:
+
+```docker
+docker images
+```
+
+Y efectivamente, puede observarse que la imagen de la api1 se ha creado con exito.
+
+![image](anexos/imagenes/1.png)
+
+Ahora lo probaremos, y para ello levantaremos el servicio con el siguiente comando:
+
+````docker
+#docker run -d -p puerto_host:puerto_docker nombre_imagen:tag
+
+docker run -d -p 8080:80 api1:pesada
+````
+
+Donde `8080` es el puerto que vamos a usar en nuestra maquina local, mientras que el `80` es de nuestro contenedor, y vamos a usar la imagen de api1, muy `importante`, recordar siempre poner el tag, porque de no hacerlo puede dar algunos problemas. 
+
+Ahora con ayuda de un `docker ps` podemos ver los detalles del contenedor
+
+Seguidamente podemos ejecutar:
+
+```docker
+curl http://localhost:8080
+```
+
+Sin embargo, esta imagen es muy pesada, pero hay una forma de volverla mas liviana, y es de la siguiente manera:
+
+```docker
+FROM golang:1.23-alpine AS builder
+
+# Configuración del entorno
+WORKDIR /app
+
+COPY go.mod .
+#COPY go.sum .
+
+# Instalar dependencias
+RUN go mod download
+
+COPY . .
+
+RUN go mod tidy
+
+# Compilar
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/api .
+#Ahora se guarda nuestro archivo en la carpeta app con el nombre api
+
+#este runtime se encarga de correr la aplicación,
+#mientras que el otro se encarga de construir 
+#runtime stage
+FROM alpine:3.22
+
+WORKDIR /app
+
+COPY --from=builder /app/api .
+
+# Puerto expuesto (debe ser el mismo que el del servidor)
+EXPOSE 8081
+
+# Comando de ejecución
+CMD ["./api"]
+```
 
 ### Maquina 3 - 202203009_3
 Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
@@ -434,3 +605,8 @@ Ahora, para hacer pruebas entre las otras APIs se hace de la siguiente manera:
 curl http://192.168.122.217:8081/api1/202203009/llamar-api2
 curl http://192.168.122.217:8081/api1/202203009/llamar-api3
 ```
+
+Demostracion de funcionamiento:
+
+
+![image](anexos/imagenes/3.png)
