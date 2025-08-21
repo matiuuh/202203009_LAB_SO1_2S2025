@@ -1,13 +1,19 @@
-# Manual y guia de instalacion
-
-#### Nombre: Mateo Estuardo Diego Noriega
-#### Carnet: 202203009
+# 📘 Manual y Guía de Instalación
 
 
 
-## Creacion maquinas virtuales
+### Programador
+- **Nombre:** Mateo Estuardo Diego Noriega  
+- **Carnet:** 202203009  
 
-Para la creacion de las maquinas virtuales simplemente basta con abrir el gestor de maquinas virtuales que se instalo.
+---
+## ⚙️ Creación de Máquinas Virtuales  
+
+En esta sección se detallan los pasos necesarios para la creación y configuración de las máquinas virtuales que serán utilizadas en el proyecto.  
+Cada máquina cumple un rol específico dentro del entorno de pruebas y ejecución de las APIs.  
+
+---
+
 
 Una vez dentro se selecciona el boton de crear maquina virtual, donde se debera de seleccionar la imagen del archivo ISO que se utilizara para la instalacion del sistema.
 
@@ -389,111 +395,6 @@ Al culminar con la realizacion de la api el siguiente paso es crear un `dockerfi
 
 Por lo tanto el siguiente paso es crear un dockerfile, y dentro de este pondremos lo siguiente:
 
-```docker
-FROM golang:1.23-alpine
-
-# Configuración del entorno
-WORKDIR /app
-COPY . .
-
-# Instalar dependencias 
-RUN go mod download
-
-# Compilar
-RUN CGO_ENABLED=0 GOOS=linux go build -o server .
-
-# Puerto expuesto (debe ser el mismo que el del servidor)
-EXPOSE 80
-
-# Comando de ejecución
-CMD ["/app/server"]
-```
-Explicando el contenido del dockerfile, primero tenemos lo siguiente:
-
-```docker
-FROM golang:1.23-alpine
-```
-Es para ir a buscar la imagen que utilizaremos, la version es la version de go con la que estamos trabajando. El -alpine, hace que se descargue una imagen liviana y que trae todo lo necesario.
-
-```docker
-WORKDIR /app
-COPY . .
-```
-Con esto creamos una carpeta dentro de nuestro contenedor llamada `app`, y dentro de `/app` nos ayudaremos con el `COPY` para copiar todo lo que esta en la carpeta donde nos encontramos hacia la carpeta de nuestro contenedor.
-
-Resumiendo, creamos un directorio llamado app dentro del contenedor, el contenedor es practicamente un mini SO en el que vamos a crear lo necesario para crear nuestras aplicaciones.
-
-Luego con el COPY copiaremos todos los archivos de nuestro directorio local hacia dentro del contenedor.
-
-```docker
-# Instalar dependencias 
-RUN go mod download
-```
-
-Esta instruccion se utiliza por si acaso hay alguba dependencia que deba descargar go.
-
-```docker
-# Compilar
-RUN CGO_ENABLED=0 GOOS=linux go build -o server .
-```
-Este comando va a deshabilitar cualquier tipo de compilacion externa de go porque nosotros vamos a compilar codigo dentro del contendor para que se ejecute dentro de el, entonces no necesita acceder a ninguna dependencia externa porque se supone que ya esta todo dentro del codigo que nosotros podamos necesitar y se descargo anteriormente con el `RUN`. Asimismo le decimos que estamos trabajando sobre un sistema linux.
-
-El `go build` crea todo dentro de un binario llamado server y lo va a crear justo donde estamos, es decir, en `/app`.
-
-Por ultimo debemos de exponer el puerto:
-
-```docker
-# Puerto expuesto (debe ser el mismo que el del servidor)
-EXPOSE 80
-```
-
-Si no exponemos el puerto, la aplicacion no se podra conectar con nuestra computadora, el contenedor va a correr pero cuando quereamos que se comunique con otras maquinas no va a poder porque no esta expuesto.
-
-
-```docker
-# Comando de ejecución
-CMD ["/app/server"]
-```
-
-Es el comando que va a estar ejecutando el codigo siempre, su diferencia con RUN es que `RUN` se ejecuta dentro del contenedor a la hora de crearse pero una vez creado ya no ejecuta nada del resto, por otro lado `CMD` se ejecuta al final de todo lo anterior. Por ultimo, ejecuta server, es decir, el binario creado anteriormente.
-
-### Creacion imagen de docker
-Para crear la imagen de docker usaremos el siguiente comando:
-
-```docker
-#docker build -t nombre_imagen:tag .
-
-docker build -t api1:pesada .
-```
-Ahora si se ejecuta el siguiente comando, podra obserbarse las imagenes que tenemos actualmente:
-
-```docker
-docker images
-```
-
-Y efectivamente, puede observarse que la imagen de la api1 se ha creado con exito.
-
-![image](anexos/imagenes/1.png)
-
-Ahora lo probaremos, y para ello levantaremos el servicio con el siguiente comando:
-
-````docker
-#docker run -d -p puerto_host:puerto_docker nombre_imagen:tag
-
-docker run -d -p 8080:80 api1:pesada
-````
-
-Donde `8080` es el puerto que vamos a usar en nuestra maquina local, mientras que el `80` es de nuestro contenedor, y vamos a usar la imagen de api1, muy `importante`, recordar siempre poner el tag, porque de no hacerlo puede dar algunos problemas. 
-
-Ahora con ayuda de un `docker ps` podemos ver los detalles del contenedor
-
-Seguidamente podemos ejecutar:
-
-```docker
-curl http://localhost:8080
-```
-
-Sin embargo, esta imagen es muy pesada, pero hay una forma de volverla mas liviana, y es de la siguiente manera:
 
 ```docker
 FROM golang:1.23-alpine AS builder
@@ -512,7 +413,7 @@ COPY . .
 RUN go mod tidy
 
 # Compilar
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/api .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/ap2 .
 #Ahora se guarda nuestro archivo en la carpeta app con el nombre api
 
 #este runtime se encarga de correr la aplicación,
@@ -522,18 +423,39 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-COPY --from=builder /app/api .
+COPY --from=builder /app/ap2 .
 
 # Puerto expuesto (debe ser el mismo que el del servidor)
-EXPOSE 8081
+EXPOSE 8082
 
 # Comando de ejecución
-CMD ["./api"]
+CMD ["./ap2"]
 ```
 
 
-### Subir imagenes con desde el host a maquina con zot
+## Creacion imagen de docker
+La creacion de la imagen de docker se hace en el mismo directorio donde se tiene el dockerfile de la api, esta demas decirlo, pero esto se realiza en la maquina host. Para crear la imagen de docker usaremos el siguiente comando:
 
+```docker
+#docker build -t nombre_imagen:tag .
+
+docker build -t ap2:api2 .
+```
+Es importante mencionar que 
+
+Ahora si se ejecuta el siguiente comando, podra obserbarse las imagenes que tenemos actualmente:
+
+```docker
+docker images
+```
+
+Y efectivamente, puede observarse que la imagen de la api1 se ha creado con exito.
+
+![image](anexos/imagenes/1.png)
+
+
+
+## Subir imagenes desde el host a la VM3 con zot
 En la maquina virtual con zot levantaremos zot en el puerto 5000.
 
 EL procedimiento es el siguiente:
@@ -567,12 +489,16 @@ curl http://localhost:5000/v2/_catalog
 Una vez realizado el procedimiento anterior introduciermos esto:
 
 ```bash
+#docker tag nombre_imagen:tag_imagen IP_de_la_maquina_con_Zot(VM3):5000/nombre_imagen:tag_imagen
+
 docker tag api1:liviana 192.168.122.107:5000/api1:liviana
 ```
 
-Cabe recalcar que dicho comando se ejecuta desde el host. Ahora solo hacemos push:
+Cabe recalcar que dicho comando se ejecuta desde el host, justo en `el directorio donde se encuentra el dockerfile`. Ahora solo hacemos push:
 
 ```bash
+#docker push IP_de_la_maquina_con_Zot(VM3):5000/nombre_imagen:tag_imagen
+
 docker push 192.168.122.107:5000/api1:liviana
 ```
 
@@ -585,7 +511,7 @@ curl http://localhost:5000/v2/_catalog
 Y ahi se podra ver si realmente se descargo la imagen.
 
 
-### Llamadas entre APIs
+## Llamadas entre APIs
 
 En cada maquina virtual con containerd se debe de realizar este proceso. Para hacer las llamadas dentre las APIs nos ayudaremos de los siguientes comandos:
 
@@ -610,11 +536,26 @@ De esta manera la maquina virtual habra consultado existosamente a la maquina 3.
 
 Ahora, para hacer pruebas entre las otras APIs se hace de la siguiente manera:
 
+### Para API1
+
 ```bash
 curl http://192.168.122.217:8081/api1/202203009/llamar-api2
 curl http://192.168.122.217:8081/api1/202203009/llamar-api3
 ```
 
+### Para API2
+
+```bash
+curl http://192.168.122.30:8082/api2/202203009/llamar-api1
+curl http://192.168.122.30:8082/api2/202203009/llamar-api3
+```
+
+### Para API3
+
+```bash
+curl http://192.168.122.30:8083/api3/202203009/llamar-api1
+curl http://192.168.122.30:8083/api3/202203009/llamar-api2
+```
 Demostracion de funcionamiento:
 
 
@@ -635,3 +576,153 @@ Demostracion de funcionamiento:
 
 #### Comunicacion API3 y API2
 ![image](anexos/imagenes/7.png)
+
+## APIs
+El software desarrollado tiene mucha similitud entre si, es decir, las tres APIs desarrolladas, en escencia es lo mismo, sin embargo algunos datos para cada una fueron modificados de manera que permitiera la correcta comunicacion entre equipos, por lo tanto, acontinuacion, se explica el codigo `main.go`.
+
+```go 
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+)
+
+// Estructura para responder en formato JSON
+type Msg struct {
+	Mensaje         string `json:"mensaje"`
+	API             string `json:"api"`
+	VM              string `json:"vm"`
+	Estudiante      string `json:"estudiante"`
+	Carnet          string `json:"carnet"`
+	RespuestaRemota string `json:"respuestaRemota"`
+}
+
+// Middleware para registrar logs de cada petición
+func logger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		log.Printf("→ %s %s", r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+		log.Printf("← %s %s (%s)", r.Method, r.URL.Path, time.Since(start))
+	})
+}
+
+// Función para verificar el estado de una API remota
+func checkRemoteAPI(url string) string {
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get(url + "/healthz")
+	if err != nil {
+		return fmt.Sprintf("No se pudo contactar la API en %s: %v", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return fmt.Sprintf("API en %s está funcionando", url)
+	}
+	return fmt.Sprintf("API en %s respondió con código %d", url, resp.StatusCode)
+}
+
+// Handler para llamar a otra API
+func callOtherAPI(apiName, vmName, studentName, carnet, targetName, targetURL string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		msg := Msg{
+			Mensaje:    fmt.Sprintf("Hola, responde la API: %s en la %s, desarrollada por el estudiante %s con carnet: %s", apiName, vmName, studentName, carnet),
+			API:        apiName,
+			VM:         vmName,
+			Estudiante: studentName,
+			Carnet:     carnet,
+		}
+
+		// Aquí verificamos si la API remota está viva
+		msg.RespuestaRemota = checkRemoteAPI(targetURL)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(msg)
+	}
+}
+
+func main() {
+	// Credenciales de esta API
+	apiName := "API3"
+	vmName := "202203009_2"
+	studentName := "Mateo Noriega"
+	carnet := "202203009"
+	port := "8083"
+
+	// URLs de las otras APIs (ajusta según tus VMs)
+	api1URL := "http://192.168.122.217:8081"
+	api2URL := "http://192.168.122.30:8082"
+
+	mux := http.NewServeMux()
+
+	// Endpoints de esta API
+	mux.HandleFunc("/api3/"+carnet+"/llamar-api1", callOtherAPI(apiName, vmName, studentName, carnet, "API1", api1URL))
+	mux.HandleFunc("/api3/"+carnet+"/llamar-api2", callOtherAPI(apiName, vmName, studentName, carnet, "API2", api2URL))
+
+	// Endpoint de salud (útil para probar si está vivo)
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
+
+	// Endpoint raíz
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("API3 viva. Usa /healthz o /api3/202203009/llamar-api{1|2}\n"))
+	})
+
+	// Iniciar servidor con logger
+	log.Printf("%s escuchando en puerto %s ...", apiName, port)
+	if err := http.ListenAndServe(":"+port, logger(mux)); err != nil {
+		log.Fatal(err)
+	}
+}
+
+```
+
+Como puede observarse cada api tiene un puerto, esto tambien es muy importante, cuando se escriba el archivo de docker, el puerto del main debe cuadrar con el de docker, de lo contrario esto dara problemas mas adelante.
+
+## Comandos adicionales
+
+- Lista tareas
+```bash
+sudo ctr tasks ls
+```
+
+- Elimina tareas
+```bash
+sudo ctr tasks kill <ID_o_nombre>
+```
+
+- Lista Contendores
+```bash
+sudo ctr containers ls
+```
+
+- Elimina Contenedores
+```bash
+sudo ctr containers rm <ID_o_nombre> 
+```
+
+Puede darse el caso de que las maquinas con apis, tengan mas tareas y se tengan que parar para poder ejecutar el contenedor que se quiere usar en ese momento, en ese caso, debe de eliminarse primero la tarea y luego `opcional`, eliminar el contenedor.
+
+Igualmente, despues de hacer eso, debe de volver a ejecutarse el pull y run de la imagen, por lo que estos dos comandos seran de ayuda:
+
+```bash
+#sudo ctr images pull --plain-http IP_VM:5000/NOMBRE_IMAGEN:TAG
+
+sudo ctr images pull --plain-http 192.168.122.107:5000/api1:liviana
+```
+
+Ahora, para ejecutar el contenedor en segundo plano usamos lo siguiente:
+
+```bash
+#sudo ctr run -d --net-host <IP_VM_DOCKER>:5000/fiber-api-go:v1 NOMBRE_CONTENEDOR_INICIALIZAR
+
+sudo ctr run -d --net-host 192.168.122.107:5000/api1:liviana MI_API_1
+
+```
