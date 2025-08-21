@@ -72,13 +72,13 @@ func main() {
 
 	// URLs de las otras APIs (ajusta según tus VMs)
 	api1URL := "http://192.168.122.217:8081"
-	api2URL := "http://192.168.122.30:8083"
+	api2URL := "http://192.168.122.30:8082"
 
 	mux := http.NewServeMux()
 
 	// Endpoints de esta API
-	mux.HandleFunc("/api1/"+carnet+"/llamar-api1", callOtherAPI(apiName, vmName, studentName, carnet, "API1", api1URL))
-	mux.HandleFunc("/api2/"+carnet+"/llamar-api2", callOtherAPI(apiName, vmName, studentName, carnet, "API2", api2URL))
+	mux.HandleFunc("/api3/"+carnet+"/llamar-api1", callOtherAPI(apiName, vmName, studentName, carnet, "API1", api1URL))
+	mux.HandleFunc("/api3/"+carnet+"/llamar-api2", callOtherAPI(apiName, vmName, studentName, carnet, "API2", api2URL))
 
 	// Endpoint de salud (útil para probar si está vivo)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {

@@ -60,10 +60,11 @@ contrasenia: `1234`
 
 ![image](anexos/creacionMaquina/cm-10.png)
 
+
+# Proyecto 1
 La creacion de dichas maquinas virtuales nos servira para hacer las respectivas conexiones que solicita el proyecto, el esquema a seguir es el siguiente:
 
 ![image](anexos/Maquinas/esquema.png)
-
 
 En nuestro caso se decidio dividirlo de la siguiente manera:
 
@@ -77,7 +78,105 @@ En resumen, la maquina 3, contenera (valga la redundancia) los contenedores y se
 
 En el caso de la maquina 1 y 2, haremos uso de `containerd`, para lo cual repetiremos el mismo proceso para ambos equipos.
 
-### Instalacion containerd (para maquina 1 y 2)
+Por lo tanto, para el desarrollo del proyecto a continuacion se muestra la guia de realizacion del mismo.
+
+### **Nota**:
+Recomiendo que para los comandos se utilice un medio que les facilite el ingreso de estos, puesto que hacerlo de otra manera puede que les complique un poco el proceso.
+
+En este caso lo realice de la siguiente manera:
+
+```bash
+ssh usuario@IP_de_la_VM
+```
+Para conocer la IP de la maquina virtual basta con ingresar el siguiente comando en la terminal de la pc host:
+
+```bash
+virsh domifaddr nombre_de_la_VM
+```
+En este punto se abrira una terminal de la maquina virtual, donde podran ingresarse comando y copiar y pegar como se hace en la consola de la host.
+
+## Maquina 3 - 202203009_3
+### Instalacion Docker
+
+Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
+
+esto lo haremos con los siguientes comandos:
+
+``` bash
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+Adicional a ello, se recomiendo instalar instala Docker Engine y complementos:
+
+```bash
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Posterior a la instalacion se debe verificar que la instalacion este correctamente hecha, se hace de la siguiente manera:
+
+```bash
+sudo docker run hello-world
+```
+
+Si observa un mensaje de bienvenida, significa que la instalacion de Docker ha sido exitosa, de lo contrario, se recomienda seguir los pasos nuevamente.
+
+Por ultimo, tenemos que hacer la configuracion de docker, que realmente este paso puede omitirse, pero por comodidad lo hare.
+
+### Configuracion post-instalacion
+
+Ahora ingresaremos el siguiente comando:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Este comando le permite al usuario ejecutar docker sin necesidad de sudo, esto debido a que el socket /var/run/docker.sock pertenece al grupo docker.
+
+Seguidamente, introducimos los siguientes comandos:
+
+```bash
+newgrp docker
+```
+
+Esto aplica inmediatamente los cambios de grupo en la sesion actual, sin esto se tendria que cerrar sesion y volver a entrar para que el usuario herede el grupo de docker, en palabras mas simples `recarga los gruos de usuario`.
+
+```bash
+sudo systemctl enable docker
+```
+
+Con este comando no se tiene que levantar manualmente con `systemctl start docker` tras cada reincio.
+
+y para verificar el estado del servicio de docker solamente usamos:
+
+```bash
+sudo systemctl status docker
+```
+
+### Instalacion Zot
+
+Una vez tengamos instalado docker, ahora podremos iniciar un registro `zot` en segundo plano, exponiendo el puerto 5000, para ello nos apoyaremos del siguiente comando:
+
+```bash
+docker run -d -p 5000:5000 --name zot ghcr.io/project-zot/zot-linux-amd64:latest
+```
+
+Con eso se descargara la imagen de `zot` y la ejecutara como un contenedor llamado `zot`. 
+
+
+## Instalacion Containerd
+Esta instalacion nos servira en la maquina1 y maquina2, por lo tanto, el proceso debe repetirse para cada una de ellas.
 
 ```bash
 sudo apt install -y containerd
@@ -432,96 +531,6 @@ EXPOSE 8081
 CMD ["./api"]
 ```
 
-### Maquina 3 - 202203009_3
-Para dicha maquina, primero que nada se debe de instalar lo necesario para el proyecto, y para ello instalaremos docker.
-
-esto lo haremos con los siguientes comandos:
-
-**Nota**:
-Recomiendo que para los comandos se utilice un medio que les facilite el ingreso de estos, puesto que hacerlo de otra manera puede que les complique un poco el proceso.
-
-En este caso lo realice de la siguiente manera:
-
-```bash
-ssh usuario@IP_de_la_VM
-```
-Para conocer la IP de la maquina virtual basta con ingresar el siguiente comando en la terminal de la pc host:
-
-```bash
-virsh domifaddr nombre_de_la_VM
-```
-En este punto se abrira una terminal de la maquina virtual, donde podran ingresarse comando y copiar y pegar como se hace en la consola de la host.
-
-``` bash
-# Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-# Add the repository to Apt sources:
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-```
-
-Adicional a ello, se recomiendo instalar instala Docker Engine y complementos:
-
-```bash
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
-Posterior a la instalacion se debe verificar que la instalacion este correctamente hecha, se hace de la siguiente manera:
-
-```bash
-sudo docker run hello-world
-```
-
-Si observa un mensaje de bienvenida, significa que la instalacion de Docker ha sido exitosa, de lo contrario, se recomienda seguir los pasos nuevamente.
-
-Por ultimo, tenemos que hacer la configuracion de docker, que realmente este paso puede omitirse, pero por comodidad lo hare.
-
-### Configuracion post-instalacion
-
-Ahora ingresaremos el siguiente comando:
-
-```bash
-sudo usermod -aG docker $USER
-```
-
-Este comando le permite al usuario ejecutar docker sin necesidad de sudo, esto debido a que el socket /var/run/docker.sock pertenece al grupo docker.
-
-Seguidamente, introducimos los siguientes comandos:
-
-```bash
-newgrp docker
-```
-
-Esto aplica inmediatamente los cambios de grupo en la sesion actual, sin esto se tendria que cerrar sesion y volver a entrar para que el usuario herede el grupo de docker, en palabras mas simples `recarga los gruos de usuario`.
-
-```bash
-sudo systemctl enable docker
-```
-
-Con este comando no se tiene que levantar manualmente con `systemctl start docker` tras cada reincio.
-
-y para verificar el estado del servicio de docker solamente usamos:
-
-```bash
-sudo systemctl status docker
-```
-
-Una vez tengamos instalado docker, ahora podremos iniciar un registro `zot` en segundo plano, exponiendo el puerto 5000, para ello nos apoyaremos del siguiente comando:
-
-```bash
-docker run -d -p 5000:5000 --name zot ghcr.io/project-zot/zot-linux-amd64:latest
-```
-
-Con eso se descargara la imagen de `zot` y la ejecutara como un contenedor llamado `zot`. 
-
 
 ### Subir imagenes con desde el host a maquina con zot
 
@@ -609,4 +618,20 @@ curl http://192.168.122.217:8081/api1/202203009/llamar-api3
 Demostracion de funcionamiento:
 
 
+#### Comunicacion API1 y API2
 ![image](anexos/imagenes/3.png)
+
+#### Comunicacion API1 y API3
+![image](anexos/imagenes/8.png)
+
+#### Comunicacion API2 y API1
+![image](anexos/imagenes/4.png)
+
+#### Comunicacion API2 y API3
+![image](anexos/imagenes/5.png)
+
+#### Comunicacion API3 y API1
+![image](anexos/imagenes/6.png)
+
+#### Comunicacion API3 y API2
+![image](anexos/imagenes/7.png)

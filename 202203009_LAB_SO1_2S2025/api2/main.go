@@ -72,7 +72,7 @@ func main() {
 
 	// URLs de las otras APIs (ajusta según tus VMs)
 	api1URL := "http://192.168.122.217:8081"
-	api3URL := "http://192.168.122.107:8083"
+	api3URL := "http://192.168.122.30:8083"
 
 	mux := http.NewServeMux()
 
