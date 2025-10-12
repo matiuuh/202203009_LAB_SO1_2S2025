@@ -1,0 +1,1 @@
+/home/matius/Descargas/SistemasOperativos/Proyecto1/Proyecto1/202203009_LAB_SO1_2S2025/Proyecto2/modulos-kernel/sysinfo_so1_202203009.o

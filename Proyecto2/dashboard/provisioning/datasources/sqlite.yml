@@ -1,0 +1,10 @@
+apiVersion: 1
+
+datasources:
+  - name: Proyecto2-SQLite
+    uid: P2SQL
+    type: frser-sqlite-datasource
+    isDefault: true
+    access: proxy
+    jsonData:
+      path: /var/lib/proyecto2/metrics.db

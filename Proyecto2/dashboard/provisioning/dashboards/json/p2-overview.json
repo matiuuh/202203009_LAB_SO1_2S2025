@@ -1,0 +1,50 @@
+{
+  "title": "Proyecto2 Overview",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 3,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Procesos por iteración (system_metrics)",
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "P2SQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT ts*1000 AS time, COUNT(*) AS value FROM system_metrics WHERE ts >= strftime('%s','now','-24 hours') GROUP BY ts ORDER BY ts"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "table",
+      "title": "Top contenedores por CPU (últimos 10 min)",
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "P2SQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ts*1000 AS time, substr(container_id,1,12) AS cid, name, cpu_pct, mem_pct FROM container_metrics WHERE ts >= strftime('%s','now','-10 minutes') ORDER BY cpu_pct DESC LIMIT 50"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Acciones recientes (decider)",
+      "datasource": { "type": "frser-sqlite-datasource", "uid": "P2SQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ts*1000 AS time, action, substr(container_id,1,12) AS cid, reason FROM actions_log ORDER BY ts DESC LIMIT 50"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
+    }
+  ]
+}
