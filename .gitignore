@@ -1,0 +1,14 @@
+# Rust
+**/target/
+**/*.rlib
+**/*.rmeta
+
+# Go
+**/bin/
+**/build/
+*.exe
+*.out
+*.test
+
+# Misc
+.DS_Store
