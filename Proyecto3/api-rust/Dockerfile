@@ -11,8 +11,6 @@ COPY . .
 # Compilar la aplicación en modo release
 RUN cargo install --path .
 
-
-
 # Imagen final más pequeña
 FROM alpine
 
