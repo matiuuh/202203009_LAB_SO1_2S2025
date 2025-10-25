@@ -1,3 +1,6 @@
+# Manual Tecnico y de Usuario
+Para el desarrollo 
+
 ### Uso de Locust
 Vamos a usar locust, este nos servira para generar trafico y este es el unico servicio que usaremos en local, el resto si va en gcp.
 
