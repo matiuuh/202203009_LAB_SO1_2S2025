@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-go
+  namespace: clima-app
+  labels: { app: client-go }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: client-go } }
+  template:
+    metadata: { labels: { app: client-go } }
+    spec:
+      containers:
+      - name: client-go
+        image: nonalcoholic-dixie-freshly.ngrok-free.dev/client-go:v1          # <-- cambia esto
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8081
+        - name: grpc-proxy
+          containerPort: 50052
+        env:
+        - name: PORT
+          value: "8081"
+        - name: CLIENT_GRPC_LISTEN       # dónde escucha el proxy gRPC
+          value: ":50052"
+        - name: WRITER_ADDR              # destino gRPC hacia server-go
+          value: "server-go-service:50051"
+        readinessProbe:
+          httpGet: { path: /health, port: 8081 }
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet: { path: /health, port: 8081 }
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests: { cpu: "50m", memory: "64Mi" }
+          limits:   { cpu: "300m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-go-service
+  namespace: clima-app
+  labels: { app: client-go }
+spec:
+  type: ClusterIP
+  selector: { app: client-go }
+  ports:
+  - name: http
+    port: 8081
+    targetPort: 8081
+  - name: grpc-proxy
+    port: 50052
+    targetPort: 50052

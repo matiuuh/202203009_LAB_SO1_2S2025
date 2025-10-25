@@ -1,0 +1,38 @@
+# kafka-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer
+  namespace: clima-app
+  labels:
+    app: kafka-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer
+    spec:
+      containers:
+      - name: kafka-consumer
+        image: nonalcoholic-dixie-freshly.ngrok-free.dev/kafka-consumer:v1
+        imagePullPolicy: Always
+        env:
+        - name: KAFKA_BROKER
+          value: "kafka:9092"           # Service del broker
+        - name: KAFKA_TOPIC
+          value: "clima"
+        - name: KAFKA_GROUP
+          value: "clima-consumer-group" # si escalas replicas, comparten grupo
+        - name: VALKEY_SERVICE_URL
+          value: "valkey:6379"          # Service de Valkey
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
